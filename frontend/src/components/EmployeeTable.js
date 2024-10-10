@@ -60,7 +60,7 @@ const EmployeeTable = ({ data, onEdit, onDelete }) => {
         cell: ({ row }) => (
           <>
             <button onClick={() => onEdit(row.original)}>Edit</button>
-            <button onClick={() => onDelete(row.original._id)}></button>
+            <button onClick={() => onDelete(row.original._id)}>Delete</button>
           </>
         ),
       },
