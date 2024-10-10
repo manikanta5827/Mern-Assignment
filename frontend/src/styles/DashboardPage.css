@@ -2,6 +2,7 @@
   padding: 20px;
   background-color: #f9f9f9;
   border-radius: 8px;
+  overflow: auto;
 }
 
 h1 {
@@ -22,7 +23,7 @@ button {
 }
 
 .add-button {
-  background-color: #4caf50;
+  background-color: royalblue;
   color: white;
 }
 
@@ -31,6 +32,7 @@ button {
   color: white;
   padding: 10px;
   height: 50%;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
 .table-container {
@@ -44,4 +46,17 @@ img {
 .Header {
   display: flex;
   justify-content: space-between;
+}
+.download-button {
+  background-color: #4caf50;
+  color: white;
+  padding: 10px 20px;
+  margin: 10px;
+  border: none;
+  cursor: pointer;
+  box-shadow: -2px 2px 2px #dcdcdc;
+}
+
+.download-button:hover {
+  background-color: #45a049;
 }

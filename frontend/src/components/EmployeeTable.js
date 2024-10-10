@@ -14,7 +14,7 @@ const EmployeeTable = ({ data, onEdit, onDelete }) => {
   const columns = useMemo(
     () => [
       {
-        header: 'No',
+        header: '',
         accessorKey: 'rowNumber',
         cell: (info) => info.row.index + 1,
       },
@@ -93,6 +93,7 @@ const EmployeeTable = ({ data, onEdit, onDelete }) => {
         value={filtering}
         onChange={(e) => setFiltering(e.target.value)}
         placeholder="Search"
+        className="search-input"
       />
       <table>
         <thead>

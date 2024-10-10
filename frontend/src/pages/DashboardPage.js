@@ -6,6 +6,7 @@ import api from '../api';
 import { useAuthContext } from '../context/AuthContext';
 import useAuth from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import * as XLSX from 'xlsx'; // Import xlsx library for Excel download
 import '../styles/DashboardPage.css';
 
 const DashboardPage = () => {
@@ -35,11 +36,31 @@ const DashboardPage = () => {
     fetchEmployees();
   }, [isAuthenticated, navigate]); // Make sure navigate is in the dependency array
 
+  // Function to handle Excel download
+  const handleDownloadExcel = () => {
+    // Convert employee data to the format suitable for Excel
+    const worksheet = XLSX.utils.json_to_sheet(
+      employees.map((employee, index) => ({
+        No: index + 1,
+        Name: employee.f_Name,
+        Email: employee.f_Email,
+        'Mobile No': employee.f_Mobile,
+        Designation: employee.f_Designation,
+        Gender: employee.f_Gender,
+        Course: employee.f_Course.join(', '),
+      }))
+    );
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Employees');
+
+    // Trigger Excel file download
+    XLSX.writeFile(workbook, 'EmployeeData.xlsx');
+  };
+
   const handleAddEmployee = async (employee) => {
     try {
       if (selectedEmployee) {
-        // console.log('sending');
-
         await api.put(`/employees/${selectedEmployee._id}`, employee);
         setNotification('Employee updated successfully!');
       } else {
@@ -48,17 +69,13 @@ const DashboardPage = () => {
       }
       setModalOpen(false);
       setSelectedEmployee(null);
-      // Refetch employees
       const response = await api.get('/employees');
       setEmployees(response.data);
     } catch (error) {
-      // Check if it's a validation error from the server
-      console.log(error);
-
       if (error.response && error.response.data.error) {
-        setNotification(error.response.data.error); // Display error message
+        setNotification(error.response.data.error);
       } else {
-        setNotification('Error occurred while saving employee.'); // Generic error
+        setNotification('Error occurred while saving employee.');
       }
     }
   };
@@ -84,10 +101,10 @@ const DashboardPage = () => {
       <div className="Header">
         <h1>Dashboard</h1>
         <button className="logout-button" onClick={logSession}>
-          LOGOUT
+          <strong>LOGOUT</strong>
         </button>
       </div>
-      <h2>Good Afternoon, {user}!</h2>
+      <p>Good Afternoon, <strong>{user}</strong>!</p>
 
       <button
         className="add-button"
@@ -96,8 +113,14 @@ const DashboardPage = () => {
           setSelectedEmployee(null);
         }}
       >
-        Add Employee
+        <strong> + Add Employee</strong>
       </button>
+
+      {/* Add a button to download Excel */}
+      <button className="download-button" onClick={handleDownloadExcel}>
+        <strong>Download Excel</strong>
+      </button>
+
       <EmployeeTable
         data={employees}
         onEdit={handleEdit}
