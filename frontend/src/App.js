@@ -5,7 +5,7 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import PrivateRoute from './components/PrivateRoute';
 import { AuthProvider } from './context/AuthContext';  // Import AuthProvider
-
+// import './styles.css'
 const App = () => {
   return (
     <AuthProvider>

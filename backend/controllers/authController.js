@@ -32,7 +32,7 @@ const registerUser = async (req, res) => {
 // Login User
 const loginUser = async (req, res) => {
   const { username, password } = req.body; // Use consistent field names
-  console.log(req.body);
+ 
 
   try {
     // Check if user exists
@@ -40,7 +40,7 @@ const loginUser = async (req, res) => {
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
-    console.log(user);
+    // console.log(user);
 
     // Compare passwords
     const isMatch = await bcrypt.compare(password, user.f_Pwd);
@@ -55,10 +55,10 @@ const loginUser = async (req, res) => {
     });
     // console.log(token);
 
-    res.status(200).json({ token });
+    res.status(200).json({ token, username });
   } catch (error) {
     console.error('Error during user login:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(501).json({ message: 'Server error' });
   }
 };
 

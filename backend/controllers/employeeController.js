@@ -1,53 +1,64 @@
 import Employee from '../models/Employee.js';
 
 const getEmployees = async (req, res) => {
+  console.log('getEmployees');
+
   try {
     const employees = await Employee.find();
-    res.json(employees);
+    res.send(employees);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-const createEmployee = async (req, res) => {
-  const {
-    f_Name,
-    f_Email,
-    f_Mobile,
-    f_Designation,
-    f_Gender,
-    f_Course,
-    f_Image,
-  } = req.body;
+const createEmployee = async (employeeData) => {
+  console.log('Creating employee with data:', employeeData);
+
+  const { name, email, mobileNo, designation, gender, course, f_Image } =
+    employeeData;
 
   const employee = new Employee({
-    f_Name,
-    f_Email,
-    f_Mobile,
-    f_Designation,
-    f_Gender,
-    f_Course,
+    f_Name: name,
+    f_Email: email,
+    f_Mobile: mobileNo,
+    f_Designation: designation,
+    f_Gender: gender,
+    f_Course: course,
     f_Image,
   });
 
   try {
-    await employee.save();
-    res.status(201).json(employee);
+    const savedEmployee = await employee.save();
+    console.log('Employee saved:', savedEmployee);
+    return savedEmployee;
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error('Error during employee creation:', error);
+    throw new Error('Failed to save employee');
   }
 };
 
-const updateEmployee = async (req, res) => {
-  const { id } = req.params;
+const updateEmployee = async (id, updateData) => {
+  // const { id } = req.params;
+
+  // const f_Image = req.file ? req.file.path : null;
+  // console.log(id, f_Image);
+
+  // const updateData = {
+  //   ...req.body,
+  //   ...(f_Image && { f_Image }),
+  // };
+  console.log('Before', updateData);
 
   try {
-    const employee = await Employee.findByIdAndUpdate(id, req.body, {
+    const updated = await Employee.findByIdAndUpdate(id, updateData, {
       new: true,
+      overwrite: true,
     });
-    res.json(employee);
+
+    console.log('updates : ', updated);
+    return updated;
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    throw new Error('failed to update employee', error);
   }
 };
 

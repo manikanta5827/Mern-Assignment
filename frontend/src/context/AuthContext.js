@@ -1,34 +1,16 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext } from 'react';
+import useAuth from '../hooks/useAuth'; // Adjust the path as needed
 
-// Create the context
 const AuthContext = createContext();
 
 // Custom hook to use AuthContext
-export const useAuth = () => {
+export const useAuthContext = () => {
   return useContext(AuthContext);
 };
 
 // AuthProvider component to wrap your app
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const auth = useAuth();
 
-  // You can add logic to check authentication status (e.g., check for token in localStorage)
-
-  const login = (data) => {
-    localStorage.setItem('token', data);
-    console.log('login context', data);
-
-    setIsAuthenticated(true);
-  };
-
-  const logout = () => {
-    localStorage.removeItem('token');
-    setIsAuthenticated(false);
-  };
-
-  return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
 };

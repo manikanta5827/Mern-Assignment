@@ -4,21 +4,37 @@ import EmployeeTable from '../components/EmployeeTable';
 import Modal from '../components/Modal';
 import Notification from '../components/Notification';
 import api from '../api';
+import { useAuthContext } from '../context/AuthContext';
+import useAuth from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+import '../styles/DashboardPage.css';
 
 const DashboardPage = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuthContext(); // Get authentication status
   const [employees, setEmployees] = useState([]);
+  const [user, setUser] = useState(localStorage.getItem('name') || 'User');
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [notification, setNotification] = useState('');
+  const { logout } = useAuth();
 
   useEffect(() => {
     const fetchEmployees = async () => {
-      const response = await api.get('/employees');
-      setEmployees(response.data);
+      if (isAuthenticated) {
+        try {
+          const response = await api.get('/employees');
+          setEmployees(response.data);
+        } catch (error) {
+          setNotification('Error fetching employees.');
+        }
+      } else {
+        navigate('/login'); // Redirect to login if not authenticated
+      }
     };
 
     fetchEmployees();
-  }, []);
+  }, [isAuthenticated, navigate]);
 
   const handleAddEmployee = async (employee) => {
     try {
@@ -46,19 +62,46 @@ const DashboardPage = () => {
 
   const handleDelete = async (id) => {
     await api.delete(`/employees/${id}`);
-    setEmployees(employees.filter(emp => emp._id !== id));
+    setEmployees(employees.filter((emp) => emp._id !== id));
     setNotification('Employee deleted successfully!');
   };
 
+  const logSession = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
-    <div>
+    <div className="dashboard">
       <h1>Dashboard</h1>
-      <button onClick={() => { setModalOpen(true); setSelectedEmployee(null); }}>Add Employee</button>
-      <EmployeeTable data={employees} onEdit={handleEdit} onDelete={handleDelete} />
+      <h2>Good Afternoon, {user}!</h2>
+      <button className="logout-button" onClick={logSession}>
+        LOGOUT
+      </button>
+      <button
+        className="add-button"
+        onClick={() => {
+          setModalOpen(true);
+          setSelectedEmployee(null);
+        }}
+      >
+        Add Employee
+      </button>
+      <EmployeeTable
+        data={employees}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
       <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
-        <EmployeeForm onSubmit={handleAddEmployee} initialData={selectedEmployee} />
+        <EmployeeForm
+          onSubmit={handleAddEmployee}
+          initialData={selectedEmployee}
+        />
       </Modal>
-      <Notification message={notification} onClose={() => setNotification('')} />
+      <Notification
+        message={notification}
+        onClose={() => setNotification('')}
+      />
     </div>
   );
 };
