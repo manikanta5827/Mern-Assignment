@@ -21,6 +21,8 @@ const RegisterPage = () => {
   };
 
   return (
+   <>
+   <img src="/logo.png" alt="logo" className='Logo' />
     <div className="register-container">
       <form onSubmit={handleRegister} className="register-form">
         <input
@@ -55,6 +57,7 @@ const RegisterPage = () => {
         </p>
       </form>
     </div>
+   </>
   );
 };
 

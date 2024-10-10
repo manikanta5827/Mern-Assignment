@@ -33,7 +33,7 @@ const DashboardPage = () => {
     };
 
     fetchEmployees();
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate]); // Make sure navigate is in the dependency array
 
   const handleAddEmployee = async (employee) => {
     try {

@@ -10,50 +10,54 @@ const LoginPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  // Ensure this effect only runs once when the component mounts
   useEffect(() => {
     if (localStorage.getItem('token')) {
-      navigate('/');
+      navigate('/');  // Redirect if already logged in
     }
-  }, []);
+  }, [navigate]);  // Add navigate as a dependency to prevent infinite re-renders
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       const response = await api.post('/login', { username, password });
       login(response.data.token, response.data.username);
-      navigate('/');
+      navigate('/');  // Navigate to dashboard upon successful login
     } catch (error) {
       alert('Invalid login credentials');
     }
   };
 
   return (
-    <div className="login-container">
-      <form onSubmit={handleLogin} className="login-form">
-        <input
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Username"
-          required
-          className="login-input"
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-          required
-          className="login-input"
-        />
-        <button type="submit" className="login-button">
-          LOGIN
-        </button>
-        <Link to="/register" className="register-link">
-          Register
-        </Link>
-      </form>
-    </div>
+    <>
+      <img src="/logo.png" alt="logo" className="Logo" />
+      <div className="login-container">
+        <form onSubmit={handleLogin} className="login-form">
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Username"
+            required
+            className="login-input"
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            required
+            className="login-input"
+          />
+          <button type="submit" className="login-button">
+            LOGIN
+          </button>
+          <Link to="/register" className="register-link">
+            Register
+          </Link>
+        </form>
+      </div>
+    </>
   );
 };
 
