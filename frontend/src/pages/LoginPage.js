@@ -46,8 +46,12 @@ const LoginPage = () => {
           required
           className="login-input"
         />
-        <button type="submit" className="login-button">Login</button>
-        <Link to="/register" className="register-link">Register</Link>
+        <button type="submit" className="login-button">
+          LOGIN
+        </button>
+        <Link to="/register" className="register-link">
+          Register
+        </Link>
       </form>
     </div>
   );
