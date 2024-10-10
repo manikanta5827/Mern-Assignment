@@ -7,42 +7,32 @@ import {
 } from '../controllers/employeeController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import multer from 'multer';
-import cloudinary from 'cloudinary';
-import streamifier from 'streamifier';
-import dotenv from 'dotenv';
-
-dotenv.config();
-
-// console.log('clou: ', process.env.CLOUDINARY_CLOUD_NAME);
-
-cloudinary.v2.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-// Multer for handling file uploads (using memory storage for temporary storage)
-const upload = multer({ storage: multer.memoryStorage() });
-
-// Function to upload a single file buffer to Cloudinary
-const uploadToCloudinary = (buffer) => {
-  console.log('In file upload');
-
-  return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.v2.uploader.upload_stream(
-      { folder: 'Employees' }, // Optional: specify a folder in Cloudinary
-      (error, result) => {
-        if (error) {
-          return reject(error);
-        }
-        resolve(result);
-      }
-    );
-    streamifier.createReadStream(buffer).pipe(uploadStream);
-  });
-};
+import path from 'path';
+import fs from 'fs';
+import sharp from 'sharp'; // Import sharp for image compression
 
 const router = express.Router();
+
+// Set up multer storage to save files in the 'uploads' directory
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = 'uploads/';
+    // Ensure the uploads directory exists
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath); // Save files in the uploads directory
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + path.extname(file.originalname)); // Unique filename
+  },
+});
+
+const upload = multer({ storage: storage }); // Use disk storage
+
+// Serve the /uploads folder as static
+router.use('/uploads', express.static('uploads')); // Allows public access to the uploads folder
 
 // Use the auth middleware
 router.use(authMiddleware);
@@ -50,44 +40,61 @@ router.use(authMiddleware);
 // Route to get all employees
 router.get('/', getEmployees);
 
-// Route to create a new employee with a single image upload
+// Route to create a new employee with a single image upload and compression
 router.post('/', upload.single('f_Image'), async (req, res) => {
-  console.log('Hii');
-
-  console.log('body: ', req.body);
-
   try {
     let imageUrl = '';
 
+    // If an image is uploaded, process and compress it
     if (req.file) {
-      const result = await uploadToCloudinary(req.file.buffer);
-      imageUrl = result.secure_url; // Get the secure URL of the uploaded image
+      const compressedImagePath = `uploads/compressed-${req.file.filename}`;
+
+      // Compress and resize image using sharp
+      await sharp(req.file.path)
+        .resize(500) // Resize to 500px width (keeping aspect ratio)
+        .jpeg({ quality: 80 }) // Compress and convert to JPEG with 80% quality
+        .toFile(compressedImagePath);
+
+      // Delete the original uncompressed image (optional)
+      fs.unlinkSync(req.file.path);
+
+      // Set the image URL to the path of the compressed image
+      imageUrl = `/uploads/compressed-${req.file.filename}`;
     }
 
     // Add the image URL to the employee data
     const employeeData = { ...req.body, f_Image: imageUrl };
-    console.log('Employee data:', employeeData);
 
-    // Save the employee with the image URL
+    // Save the employee with the compressed image URL
     const employee = await createEmployee(employeeData);
-    console.log('Employee saved:', employee);
 
     res.status(201).json(employee);
   } catch (error) {
-    console.error('Error while creating employee:');
+    console.error('Error while creating employee:', error);
     res.status(503).json({ error: 'Failed to create employee' });
   }
 });
 
-// Route to update an employee with a single image upload
+// Route to update an employee with a single image upload and compression
 router.put('/:id', upload.single('f_Image'), async (req, res) => {
   try {
     let imageUrl = '';
 
-    // If a new image is uploaded, upload it to Cloudinary
+    // If a new image is uploaded, process and compress it
     if (req.file) {
-      const result = await uploadToCloudinary(req.file.buffer);
-      imageUrl = result.secure_url; // Get the secure URL of the uploaded image
+      const compressedImagePath = `uploads/compressed-${req.file.filename}`;
+
+      // Compress and resize image using sharp
+      await sharp(req.file.path)
+        .resize(500) // Resize to 500px width (keeping aspect ratio)
+        .jpeg({ quality: 80 }) // Compress and convert to JPEG with 80% quality
+        .toFile(compressedImagePath);
+
+      // Delete the original uncompressed image (optional)
+      fs.unlinkSync(req.file.path);
+
+      // Set the image URL to the path of the compressed image
+      imageUrl = `/uploads/compressed-${req.file.filename}`;
     }
 
     // Construct employee data
@@ -106,13 +113,11 @@ router.put('/:id', upload.single('f_Image'), async (req, res) => {
     }
 
     // Update the employee with the new data
-    console.log(req.params.id, employeeData);
     const updatedEmployee = await updateEmployee(req.params.id, employeeData);
-    console.log('Updated Employee:', updatedEmployee);
 
     res.status(200).json(updatedEmployee);
   } catch (error) {
-    console.error('Failed to update employee:');
+    console.error('Failed to update employee:', error);
     res.status(500).json({ error: 'Failed to update employee' });
   }
 });

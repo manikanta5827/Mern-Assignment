@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import EmployeeForm from '../components/EmployeeForm';
 import EmployeeTable from '../components/EmployeeTable';
 import Modal from '../components/Modal';
-import Notification from '../components/Notification';
 import api from '../api';
 import { useAuthContext } from '../context/AuthContext';
 import useAuth from '../hooks/useAuth';
@@ -72,12 +71,15 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className="dashboard">
-      <h1>Dashboard</h1>
+    <div className="dashboard" style={{ height: '90vh' }}>
+      <div className="Header">
+        <h1>Dashboard</h1>
+        <button className="logout-button" onClick={logSession}>
+          LOGOUT
+        </button>
+      </div>
       <h2>Good Afternoon, {user}!</h2>
-      <button className="logout-button" onClick={logSession}>
-        LOGOUT
-      </button>
+
       <button
         className="add-button"
         onClick={() => {
@@ -98,10 +100,6 @@ const DashboardPage = () => {
           initialData={selectedEmployee}
         />
       </Modal>
-      <Notification
-        message={notification}
-        onClose={() => setNotification('')}
-      />
     </div>
   );
 };

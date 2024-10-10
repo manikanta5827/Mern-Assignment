@@ -48,7 +48,7 @@ const EmployeeTable = ({ data, onEdit, onDelete }) => {
         accessorKey: 'f_Image',
         cell: ({ row }) => (
           <img
-            src={row.original.f_Image}
+            src={`http://localhost:4000${row.original.f_Image}`}
             alt={row.original.f_Name}
             className="employee-image"
           />

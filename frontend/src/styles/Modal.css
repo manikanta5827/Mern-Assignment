@@ -8,7 +8,11 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  min-height: 90vh;
+ 
+  overflow: auto;
 }
+
 
 .modal-content {
   background-color: white;
