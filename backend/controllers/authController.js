@@ -32,7 +32,7 @@ const registerUser = async (req, res) => {
 // Login User
 const loginUser = async (req, res) => {
   const { username, password } = req.body; // Use consistent field names
- 
+  console.log(req.body);
 
   try {
     // Check if user exists

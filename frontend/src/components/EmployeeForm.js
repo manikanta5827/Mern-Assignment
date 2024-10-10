@@ -1,168 +1,168 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/EmployeeForm.css'; // Import the updated CSS
-import { validationSchema } from './validation'; // Import the validation schema
-import InputField from './InputField'; // Import the InputField component
-import { Formik } from 'formik';
 
 const EmployeeForm = ({ onSubmit, initialData }) => {
-  // Initial data to populate the form
-  const initialValues = {
-    name: initialData?.f_Name || '',
-    email: initialData?.f_Email || '',
-    mobileNo: initialData?.f_Mobile || '',
-    designation: initialData?.f_Designation || '',
-    gender: initialData?.f_Gender || '',
-    course: initialData?.f_Course || [],
-    image: null, 
+  const [employee, setEmployee] = useState({
+    name: '',
+    email: '',
+    mobileNo: '',
+    designation: '',
+    gender: '',
+    course: [],
+    image: null,
+  });
+
+  // Prefill form fields with initialData (if available)
+  useEffect(() => {
+    if (initialData) {
+      setEmployee({
+        name: initialData.f_Name || '',
+        email: initialData.f_Email || '',
+        mobileNo: initialData.f_Mobile || '',
+        designation: initialData.f_Designation || '',
+        gender: initialData.f_Gender || '',
+        course: initialData.f_Course || [],
+        image: null, // Leave image blank as files cannot be prefilled for security reasons
+      });
+    }
+  }, [initialData]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'course') {
+      setEmployee((prev) => {
+        const newCourses = prev.course.includes(value)
+          ? prev.course.filter((course) => course !== value)
+          : [...prev.course, value];
+        return { ...prev, course: newCourses };
+      });
+    } else {
+      setEmployee((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleFileChange = (e) => {
+    setEmployee((prev) => ({ ...prev, image: e.target.files[0] }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    // Basic validation (you can expand this as needed)
+    if (!employee.name || !employee.email || !employee.mobileNo || 
+        !employee.designation || !employee.gender || employee.course.length === 0 || 
+        !employee.image) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('name', employee.name);
+    formData.append('email', employee.email);
+    formData.append('mobileNo', employee.mobileNo);
+    formData.append('designation', employee.designation);
+    formData.append('gender', employee.gender);
+    employee.course.forEach((course) => formData.append('course', course));
+    if (employee.image) {
+      formData.append('f_Image', employee.image);
+    }
+
+    onSubmit(formData); // Pass formData to the parent component's handler
   };
 
   return (
-    <Formik
-      initialValues={initialValues}
-      validationSchema={validationSchema}
-      onSubmit={(values) => {
-        const formData = new FormData();
-        formData.append('name', values.name);
-        formData.append('email', values.email);
-        formData.append('mobileNo', values.mobileNo);
-        formData.append('designation', values.designation);
-        formData.append('gender', values.gender);
-        values.course.forEach((course) => formData.append('course', course));
-        if (values.image) {
-          formData.append('f_Image', values.image);
-        }
-        onSubmit(formData);
-      }}
-    >
-      {({ values, handleChange, handleSubmit, setFieldValue, errors }) => (
-        <form onSubmit={handleSubmit} className="employee-form">
-          <InputField
-            label="Name"
-            name="name"
-            value={values.name}
-            onChange={handleChange}
-            placeholder="Name"
-          />
-          {errors.name && <span className="error">{errors.name}</span>}
-
-          <InputField
-            label="Email"
-            name="email"
-            value={values.email}
-            onChange={handleChange}
-            placeholder="Email"
-          />
-          {errors.email && <span className="error">{errors.email}</span>}
-
-          <InputField
-            label="Mobile No"
-            name="mobileNo"
-            value={values.mobileNo}
-            onChange={handleChange}
-            placeholder="Mobile No"
-          />
-          {errors.mobileNo && <span className="error">{errors.mobileNo}</span>}
-
-          <select
-            name="designation"
-            value={values.designation}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select Designation</option>
-            <option value="HR">HR</option>
-            <option value="Manager">Manager</option>
-            <option value="Sales">Sales</option>
-          </select>
-          {errors.designation && <span className="error">{errors.designation}</span>}
-
-          <div>
-            <label>Gender:</label>
-            <label>
-              <input
-                type="radio"
-                name="gender"
-                value="M"
-                checked={values.gender === 'M'}
-                onChange={handleChange}
-              />
-              Male
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="gender"
-                value="F"
-                checked={values.gender === 'F'}
-                onChange={handleChange}
-              />
-              Female
-            </label>
-          </div>
-          {errors.gender && <span className="error">{errors.gender}</span>}
-
-          <div>
-            <label>Course:</label>
-            <label>
-              <input
-                type="checkbox"
-                name="course"
-                value="MCA"
-                checked={values.course.includes('MCA')}
-                onChange={() => {
-                  const newCourses = values.course.includes('MCA')
-                    ? values.course.filter((c) => c !== 'MCA')
-                    : [...values.course, 'MCA'];
-                  setFieldValue('course', newCourses);
-                }}
-              />
-              MCA
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                name="course"
-                value="BCA"
-                checked={values.course.includes('BCA')}
-                onChange={() => {
-                  const newCourses = values.course.includes('BCA')
-                    ? values.course.filter((c) => c !== 'BCA')
-                    : [...values.course, 'BCA'];
-                  setFieldValue('course', newCourses);
-                }}
-              />
-              BCA
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                name="course"
-                value="BSC"
-                checked={values.course.includes('BSC')}
-                onChange={() => {
-                  const newCourses = values.course.includes('BSC')
-                    ? values.course.filter((c) => c !== 'BSC')
-                    : [...values.course, 'BSC'];
-                  setFieldValue('course', newCourses);
-                }}
-              />
-              BSC
-            </label>
-          </div>
-          {errors.course && <span className="error">{errors.course}</span>}
-
+    <form onSubmit={handleSubmit} className="employee-form">
+      <input
+        name="name"
+        value={employee.name}
+        onChange={handleChange}
+        placeholder="Name"
+        required
+      />
+      <input
+        name="email"
+        value={employee.email}
+        onChange={handleChange}
+        placeholder="Email"
+        required
+      />
+      <input
+        name="mobileNo"
+        value={employee.mobileNo}
+        onChange={handleChange}
+        placeholder="Mobile No"
+        required
+      />
+      <select
+        name="designation"
+        value={employee.designation}
+        onChange={handleChange}
+        required
+      >
+        <option value="">Select Designation</option>
+        <option value="HR">HR</option>
+        <option value="Manager">Manager</option>
+        <option value="Sales">Sales</option>
+      </select>
+      <div>
+        <label>Gender:</label>
+        <label>
           <input
-            type="file"
-            onChange={(event) => {
-              setFieldValue('image', event.currentTarget.files[0]);
-            }}
+            type="radio"
+            name="gender"
+            value="M"
+            checked={employee.gender === 'M'}
+            onChange={handleChange}
           />
-          {errors.image && <span className="error">{errors.image}</span>}
-
-          <button type="submit">Submit</button>
-        </form>
-      )}
-    </Formik>
+          Male
+        </label>
+        <label>
+          <input
+            type="radio"
+            name="gender"
+            value="F"
+            checked={employee.gender === 'F'}
+            onChange={handleChange}
+          />
+          Female
+        </label>
+      </div>
+      <div>
+        <label>Course:</label>
+        <label>
+          <input
+            type="checkbox"
+            name="course"
+            value="MCA"
+            checked={employee.course.includes('MCA')}
+            onChange={handleChange}
+          />
+          MCA
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            name="course"
+            value="BCA"
+            checked={employee.course.includes('BCA')}
+            onChange={handleChange}
+          />
+          BCA
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            name="course"
+            value="BSC"
+            checked={employee.course.includes('BSC')}
+            onChange={handleChange}
+          />
+          BSC
+        </label>
+      </div>
+      <input type="file" onChange={handleFileChange} required />
+      <button type="submit">Submit</button>
+    </form>
   );
 };
 

@@ -29,7 +29,17 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage: storage }); // Use disk storage
+// Define a file filter to allow only image files
+const fileFilter = (req, file, cb) => {
+  // Accept only image files
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Input file contains unsupported image format'), false);
+  }
+};
+
+const upload = multer({ storage: storage, fileFilter: fileFilter }); // Use disk storage with file filter
 
 // Serve the /uploads folder as static
 router.use('/uploads', express.static('uploads')); // Allows public access to the uploads folder

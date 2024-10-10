@@ -38,6 +38,8 @@ const DashboardPage = () => {
   const handleAddEmployee = async (employee) => {
     try {
       if (selectedEmployee) {
+        // console.log('sending');
+
         await api.put(`/employees/${selectedEmployee._id}`, employee);
         setNotification('Employee updated successfully!');
       } else {
@@ -50,7 +52,14 @@ const DashboardPage = () => {
       const response = await api.get('/employees');
       setEmployees(response.data);
     } catch (error) {
-      setNotification('Error occurred while saving employee.');
+      // Check if it's a validation error from the server
+      console.log(error);
+
+      if (error.response && error.response.data.error) {
+        setNotification(error.response.data.error); // Display error message
+      } else {
+        setNotification('Error occurred while saving employee.'); // Generic error
+      }
     }
   };
 
